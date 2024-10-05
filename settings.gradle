@@ -1,1 +1,9 @@
 rootProject.name = 'backt'
+
+include 'core'
+include 'mysql'
+include 'postgresql'
+include 'mongodb'
+include 'services'
+include 'shell'
+include 'common'

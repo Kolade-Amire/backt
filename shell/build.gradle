@@ -1,0 +1,4 @@
+dependencies {
+    implementation 'org.springframework.shell:spring-shell-starter'
+    testImplementation 'org.springframework.shell:spring-shell-starter-test'
+}

@@ -17,16 +17,33 @@ repositories {
 	mavenCentral()
 }
 
+allprojects {
+	repositories {
+		mavenCentral()
+	}
+}
+
 ext {
 	set('springShellVersion', "3.3.3")
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.shell:spring-shell-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.shell:spring-shell-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'io.spring.dependency-management'
+
+	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	}
+
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
 }
 
 dependencyManagement {
