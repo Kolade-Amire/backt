@@ -1,2 +1,7 @@
-dependencies {implementation project(':core')
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(':core')
 }
