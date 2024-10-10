@@ -15,6 +15,7 @@ repositories {
 	mavenCentral()
 }
 
+
 allprojects {
 	group = 'com.dev'
 	version = '0.0.1-SNAPSHOT'
@@ -27,22 +28,17 @@ ext {
 	set('springShellVersion', "3.3.3")
 }
 
-
-
+springBoot {
+	mainClass = 'org.kolade.core.BacktApplication'
+}
 
 subprojects {
 	apply plugin: 'java'
-	apply plugin: 'io.spring.dependency-management'
-	apply plugin: 'io.spring.dependency-management'
 
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	}
-
-	tasks.named('test') {
-		useJUnitPlatform()
 	}
 }
 
