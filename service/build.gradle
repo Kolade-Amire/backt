@@ -19,7 +19,9 @@ repositories {
 
 dependencies {
     implementation project(':core')
-    implementation 'org.mongodb:mongodb-driver-sync:5.1.2'
+    implementation project(':mysql')
+    implementation project(':postgresql')
+    implementation project(':mongodb')
 }
 
 tasks.named('test') {

@@ -1,7 +1,11 @@
 package org.kolade.postgresql;
 
+import org.kolade.core.exception.CustomBacktException;
+import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
 import org.kolade.core.DatabaseDetails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
@@ -11,6 +15,8 @@ import java.sql.SQLException;
 @Component
 public class PostgresConnection implements DatabaseConnection {
 
+    Logger logger = LoggerFactory.getLogger(PostgresConnection.class);
+
     private Connection connection;
 
     @Override
@@ -18,7 +24,7 @@ public class PostgresConnection implements DatabaseConnection {
         try {
             connection = DriverManager.getConnection(databaseDetails.getConnectionUrl(), databaseDetails.getUsername(), databaseDetails.getPassword());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseConnectionException("Unable to connect to the PostgreSQL database", e, databaseDetails.getConnectionUrl());
         }
     }
 
@@ -27,6 +33,7 @@ public class PostgresConnection implements DatabaseConnection {
         try {
             return connection != null && !connection.isClosed();
         } catch (SQLException e) {
+            logger.error("Error testing connection", e);
             return false;
         }
     }
@@ -37,7 +44,7 @@ public class PostgresConnection implements DatabaseConnection {
             try {
                 connection.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new CustomBacktException("Unable to close connection", e);
             }
         }
 

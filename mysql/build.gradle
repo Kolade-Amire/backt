@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     implementation project(':core')
-    implementation 'mysql:mysql-connector-java:9.0.0'
+    implementation 'mysql:mysql-connector-java:8.0.33'
 }
 
 tasks.named('test') {
