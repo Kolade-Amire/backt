@@ -2,6 +2,7 @@ package org.kolade.mongodb;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import org.bson.Document;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
@@ -53,5 +54,24 @@ public class MongoDBConnection implements DatabaseConnection {
     @Override
     public String getType() {
         return "MongoDB";
+    }
+
+    @Override
+    public String getDatabaseName() {
+        try{
+            return mongoClient.listDatabaseNames().first();
+        }catch(Exception e){
+            throw new CustomBacktException("Unable to get database name", e);
+        }
+    }
+
+    @Override
+    public String getDatabaseVersion() {
+        try{
+            Document buildInfo = mongoClient.getDatabase("admin").runCommand(new Document("buildInfo", 1));
+            return buildInfo.getString("version");
+        } catch (Exception e) {
+            throw new CustomBacktException("Unable to get database version", e);
+        }
     }
 }

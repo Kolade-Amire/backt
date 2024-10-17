@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -50,5 +51,31 @@ public class MySQLConnection implements DatabaseConnection {
     @Override
     public String getType() {
         return "MySQL";
+    }
+
+    @Override
+    public String getDatabaseName() {
+        if (connection != null) {
+            try {
+                return connection.getCatalog();
+            } catch (SQLException e) {
+                throw new CustomBacktException("Unable to get database name", e);
+            }
+
+        }
+        return "Unknown";
+    }
+
+    @Override
+    public String getDatabaseVersion() {
+        if (connection != null) {
+            try{
+                DatabaseMetaData metaData = connection.getMetaData();
+                return metaData.getDatabaseProductVersion();
+            }catch (SQLException e){
+                throw new CustomBacktException("Unable to get database version", e);
+            }
+        }
+        return "Unknown";
     }
 }

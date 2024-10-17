@@ -15,6 +15,8 @@ public interface DatabaseConnection {
 
     String getType();
 
+    String getDatabaseName();
 
+    String getDatabaseVersion();
 
 }
