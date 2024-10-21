@@ -22,6 +22,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(':core')
+    implementation project(':service')
     implementation "org.springframework.shell:spring-shell-starter:${springShellVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }

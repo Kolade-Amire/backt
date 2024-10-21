@@ -25,7 +25,7 @@ public class MongoDBConnection implements DatabaseConnection {
         try {
             mongoClient = MongoClients.create(databaseDetails.getConnectionUrl());
         }catch (Exception e) {
-            throw new DatabaseConnectionException("Unable to connect to the MongoDB database", e, databaseDetails.getConnectionUrl());
+            throw new DatabaseConnectionException("Unable to connect to the MongoDB database: ", e, databaseDetails.getConnectionUrl());
         }
     }
 
@@ -35,7 +35,7 @@ public class MongoDBConnection implements DatabaseConnection {
             mongoClient.listDatabaseNames().first();
             return true;
         } catch (Exception e) {
-            logger.error("Error testing connection", e);
+            logger.error("Error testing connection: ", e);
             return false;
         }
     }
@@ -46,10 +46,11 @@ public class MongoDBConnection implements DatabaseConnection {
             try {
                 mongoClient.close();
             } catch (Exception e) {
-                throw new CustomBacktException("Unable to close connection", e);
+                throw new CustomBacktException("Unable to close connection: ", e);
             }
         }
     }
+
 
     @Override
     public String getType() {
@@ -58,10 +59,10 @@ public class MongoDBConnection implements DatabaseConnection {
 
     @Override
     public String getDatabaseName() {
-        try{
+        try {
             return mongoClient.listDatabaseNames().first();
         }catch(Exception e){
-            throw new CustomBacktException("Unable to get database name", e);
+            throw new CustomBacktException("Unable to get database name: ", e);
         }
     }
 
@@ -71,7 +72,7 @@ public class MongoDBConnection implements DatabaseConnection {
             Document buildInfo = mongoClient.getDatabase("admin").runCommand(new Document("buildInfo", 1));
             return buildInfo.getString("version");
         } catch (Exception e) {
-            throw new CustomBacktException("Unable to get database version", e);
+            throw new CustomBacktException("Unable to get database version: ", e);
         }
     }
 }

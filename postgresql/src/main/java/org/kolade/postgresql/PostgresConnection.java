@@ -20,6 +20,7 @@ public class PostgresConnection implements DatabaseConnection {
 
     private Connection connection;
 
+
     @Override
     public void connect(DatabaseDetails databaseDetails) {
         try {
@@ -28,6 +29,7 @@ public class PostgresConnection implements DatabaseConnection {
             throw new DatabaseConnectionException("Unable to connect to the PostgreSQL database", e, databaseDetails.getConnectionUrl());
         }
     }
+
 
     @Override
     public boolean testConnection() {
@@ -64,10 +66,10 @@ public class PostgresConnection implements DatabaseConnection {
             } catch (SQLException e) {
                 throw new CustomBacktException("unable to get database name", e);
             }
-
         }
         return "Unknown";
     }
+
 
     @Override
     public String getDatabaseVersion() {
@@ -81,5 +83,6 @@ public class PostgresConnection implements DatabaseConnection {
         }
         return "Unknown";
     }
+
 
 }

@@ -3,6 +3,7 @@ package org.kolade.core.exception;
 public class DatabaseConnectionException extends CustomBacktException {
     private final String connectionUrl;
 
+
     public DatabaseConnectionException(String message, Throwable cause, String connectionUrl) {
         super(message, cause);
         this.connectionUrl = connectionUrl;
