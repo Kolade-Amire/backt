@@ -28,10 +28,6 @@ ext {
 	set('springShellVersion', "3.3.3")
 }
 
-springBoot {
-	mainClass = 'org.kolade.shell.ShellApplication'
-}
-
 subprojects {
 	apply plugin: 'java'
 

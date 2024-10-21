@@ -2,8 +2,6 @@ package org.kolade.mongodb;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.bson.Document;
 import org.kolade.core.DatabaseDetails;
 import org.kolade.core.exception.CustomBacktException;

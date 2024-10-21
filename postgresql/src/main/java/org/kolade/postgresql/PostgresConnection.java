@@ -1,11 +1,9 @@
 package org.kolade.postgresql;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import org.kolade.core.DatabaseDetails;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
-import org.kolade.core.DatabaseDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
