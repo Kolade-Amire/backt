@@ -44,11 +44,42 @@ public class DatabaseShellCommandsImpl implements DatabaseShellCommands {
     @ShellMethod("Test the current database connection")
     @Override
     public String testConnection() {
-        return "";
+        if (activeConnection == null) {
+            return "No active database connection. Connect to a database";
+        }
+
+        try {
+            if (activeConnection.testConnection()) {
+                logger.info("Connection to the {} is active!.", activeConnection.getType());
+                return "Connection to " + activeConnection.getType() + "database is active!";
+            } else {
+                logger.warn("Connection to {} database is inactive.", activeConnection.getType());
+                return "Connection to " + activeConnection.getType() + " database is inactive.";
+            }
+
+        } catch (Exception e) {
+            logger.error("Error testing connection: {}", e.getMessage());
+            return "Error testing the connection: " + e.getMessage();
+        }
     }
 
+
+    @ShellMethod("Disconnect from the current database")
     @Override
     public String disconnectDatabase() {
-        return "";
+        if (activeConnection == null) {
+            return "No active connection to disconnect.";
+        }
+
+        try {
+            activeConnection.disconnect();
+            String dbType = activeConnection.getType();
+            activeConnection = null;
+            logger.info("Successfully disconnected from the {} database.", dbType);
+            return "Successfully disconnected from the " + dbType + " database.";
+        } catch (Exception e) {
+            logger.error("Failed to disconnect from the database: {}", e.getMessage());
+            return "Error: Unable to disconnect from the database. " + e.getMessage();
+        }
     }
 }

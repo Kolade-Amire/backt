@@ -1,5 +1,7 @@
 package org.kolade.mysql;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
@@ -16,7 +18,7 @@ import java.sql.SQLException;
 @Component
 public class MySQLConnection implements DatabaseConnection {
 
-    Logger logger = LoggerFactory.getLogger(MySQLConnection.class);
+    private static  final Logger logger = LoggerFactory.getLogger(MySQLConnection.class);
 
     private Connection connection;
 

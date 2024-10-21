@@ -2,11 +2,13 @@ package org.kolade.mongodb;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.bson.Document;
+import org.kolade.core.DatabaseDetails;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
-import org.kolade.core.DatabaseDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MongoDBConnection implements DatabaseConnection {
 
-    Logger logger = LoggerFactory.getLogger(MongoDBConnection.class);
+    private static  final Logger logger = LoggerFactory.getLogger(MongoDBConnection.class);
 
 
     private MongoClient mongoClient;
