@@ -21,9 +21,12 @@ repositories {
     mavenCentral()
 }
 
-
 springBoot {
     mainClass = 'org.kolade.shell.ShellApplication'
+}
+
+bootJar {
+    setMainClass('org.kolade.shell.ShellApplication')
 }
 
 
@@ -34,10 +37,10 @@ dependencies {
 
     implementation project(':core')
     implementation project(':service')
+
     implementation "org.springframework.shell:spring-shell-starter:${springShellVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
-
 
 
 tasks.named('test') {

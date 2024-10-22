@@ -28,6 +28,7 @@ ext {
 	set('springShellVersion', "3.3.3")
 }
 
+
 subprojects {
 	apply plugin: 'java'
 
