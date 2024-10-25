@@ -6,6 +6,7 @@ import org.kolade.core.DatabaseDetails;
 import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
 import org.kolade.service.DatabaseConnectionFactory;
+import org.kolade.core.DatabaseDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.shell.standard.ShellComponent;
@@ -18,6 +19,7 @@ public class DatabaseConnectionCommands implements DatabaseConnectionCommandsInt
 
     private final DatabaseConnectionFactory databaseConnectionFactory;
     private DatabaseConnection activeConnection;
+    private final DatabaseDetailsService databaseDetailsService;
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConnectionCommands.class);
 
     @PostConstruct
@@ -41,6 +43,7 @@ public class DatabaseConnectionCommands implements DatabaseConnectionCommandsInt
 
             connection.connect(databaseDetails);
             activeConnection = connection;
+            databaseDetailsService.setActiveDatabaseDetails(databaseDetails);
 
             logger.info("Successfully connected to the {} database at {}", type, url);
             return "Successfully connected to " + type + " database at " + url;
@@ -82,6 +85,7 @@ public class DatabaseConnectionCommands implements DatabaseConnectionCommandsInt
 
         try {
             activeConnection.disconnect();
+            databaseDetailsService.clearActiveDatabaseDetails();
             String dbType = activeConnection.getType();
             activeConnection = null;
             logger.info("Successfully disconnected from the {} database.", dbType);

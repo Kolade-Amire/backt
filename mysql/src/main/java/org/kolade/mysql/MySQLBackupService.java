@@ -1,29 +1,59 @@
 package org.kolade.mysql;
 
+import lombok.RequiredArgsConstructor;
+import org.kolade.core.DatabaseDetailsService;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.interfaces.BackupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 @Service
+@RequiredArgsConstructor
 public class MySQLBackupService implements BackupService {
 
-    public void executeCommand(String command) throws IOException {
+    private static final Logger logger = LoggerFactory.getLogger(MySQLBackupService.class);
+    private final DatabaseDetailsService databaseDetailService;
 
+    public void executeCommand(String command) {
+
+        try {
             ProcessBuilder processBuilder = new ProcessBuilder("bin/bash", "-c", command);
+            processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
-            try {
-                int exitCode = process.waitFor();
-                if (exitCode != 0){
-                    throw new IOException("Backup process failed with exit code: " + exitCode);
+            try (
+                    BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()))
+            ) {
+
+                //log standard output
+                stdOut.lines().forEach(logger::info);
+
+                //log error output (if any)
+                stdError.lines().forEach(logger::error);
+
+                boolean isFinished = process.waitFor(300, TimeUnit.SECONDS);
+                if (!isFinished) {
+                    process.destroyForcibly();
+                    throw new IOException("Backup process timed out");
                 }
-            }catch(InterruptedException e){
-                Thread.currentThread().interrupt();
-                throw new IOException("Backup process was interrupted", e);
+                if (process.exitValue() != 0) {
+                    throw new IOException("Backup process failed with exit code: " + process.exitValue());
+                }
+
             }
+
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CustomBacktException("An error occurred during backup process:", e);
+        }
     }
 
     @Override
