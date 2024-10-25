@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MongoDBConnection implements DatabaseConnection {
 
-    private static  final Logger logger = LoggerFactory.getLogger(MongoDBConnection.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(MongoDBConnection.class);
 
     private MongoClient mongoClient;
 
@@ -24,14 +23,14 @@ public class MongoDBConnection implements DatabaseConnection {
     public void connect(DatabaseDetails databaseDetails) {
         try {
             mongoClient = MongoClients.create(databaseDetails.getConnectionUrl());
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new DatabaseConnectionException("Unable to connect to the MongoDB database: ", e, databaseDetails.getConnectionUrl());
         }
     }
 
     @Override
     public boolean testConnection() {
-        try{
+        try {
             mongoClient.listDatabaseNames().first();
             return true;
         } catch (Exception e) {
@@ -61,14 +60,14 @@ public class MongoDBConnection implements DatabaseConnection {
     public String getDatabaseName() {
         try {
             return mongoClient.listDatabaseNames().first();
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new CustomBacktException("Unable to get database name: ", e);
         }
     }
 
     @Override
     public String getDatabaseVersion() {
-        try{
+        try {
             Document buildInfo = mongoClient.getDatabase("admin").runCommand(new Document("buildInfo", 1));
             return buildInfo.getString("version");
         } catch (Exception e) {

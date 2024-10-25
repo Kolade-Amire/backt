@@ -1,2 +1,8 @@
-debug: true
-
+spring:
+  application:
+    name: shell
+  shell:
+    interactive:
+      enabled: true
+    script:
+      enabled: true

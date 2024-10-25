@@ -1,0 +1,25 @@
+1729845892858:connectToDatabase --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password
+1729845967955:shell:>connectToDatabase --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password
+1729845967971:No command found for 'connectToDatabase --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password'
+1729845970525:shell:>shell:>connectToDatabase --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password
+1729845970536:No command found for 'connectToDatabase --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password'
+1729845974091:shell:>clear
+1729846004354:connect-to-database --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password
+1729846027066:>connect-to-database --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password
+1729846084578:No command found for 'connect-to-database --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres --password'connect-to-database --type "postgresql" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password ""
+1729846182763:connect-db --type postgresql --url jdbc:postgresql://localhost:5432/recat --username postgres
+1729846220957:connect-db
+1729846436173:connect-db --type "postgresql" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password ""
+1729847000694:connect-db
+1729847006087:help
+1729847027459:script
+1729847039994:history
+1729847251840:commands
+1729847254914:help
+1729847462784:testConnection
+1729847498677:help
+1729847527285:connect-db --type "postgresql" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password ""
+1729847547094:connect-db --type "postgresql" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password "postgres"
+1729847688062:connect-db --type "postgres" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password "postgres"
+1729847704757:test-connection
+1729847735766:disconnect-database

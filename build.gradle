@@ -1,50 +1,44 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.3.4'
-	id 'io.spring.dependency-management' version '1.1.6'
+    id 'java'
 }
 
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
-repositories {
-	mavenCentral()
-}
-
-
-allprojects {
-	group = 'com.dev'
-	version = '0.0.1-SNAPSHOT'
-	repositories {
-		mavenCentral()
-	}
-}
-
-ext {
-	set('springShellVersion', "3.3.3")
-}
-
+group = 'com.dev'
+version = '0.0.1-SNAPSHOT'
 
 subprojects {
-	apply plugin: 'java'
+    apply plugin: 'java'
 
-	dependencies {
-		implementation 'org.springframework.boot:spring-boot-starter'
-		testImplementation 'org.springframework.boot:spring-boot-starter-test'
-		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	}
-}
 
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.shell:spring-shell-dependencies:${springShellVersion}"
-	}
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+
+
+        implementation 'org.projectlombok:lombok:1.18.30'
+        annotationProcessor 'org.projectlombok:lombok:1.18.30'
+        implementation 'org.slf4j:slf4j-api:2.0.9'
+
+        testImplementation "org.springframework.boot:spring-boot-starter-test"
+        testCompileOnly 'org.projectlombok:lombok:1.18.30'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-parameters")
+}
+

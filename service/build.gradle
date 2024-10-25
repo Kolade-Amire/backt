@@ -1,6 +1,8 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.3.4'
+    id 'org.springframework.boot' version '3.3.4' apply false
     id 'io.spring.dependency-management' version '1.1.6'
 }
 
@@ -17,9 +19,17 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+//    compileOnly 'org.projectlombok:lombok:1.18.30'
+//    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    implementation 'org.springframework.boot:spring-boot'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 
     implementation project(':core')
@@ -30,12 +40,4 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-bootJar {
-    enabled = false
-}
-
-jar {
-    enabled = true
 }

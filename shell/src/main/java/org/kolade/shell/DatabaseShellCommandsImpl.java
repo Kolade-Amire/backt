@@ -7,21 +7,22 @@ import org.kolade.core.interfaces.DatabaseConnection;
 import org.kolade.service.factory.DatabaseConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
 @RequiredArgsConstructor
-public class DatabaseShellCommandsImpl implements DatabaseShellCommands {
+public class DatabaseShellCommandsImpl{
 
     private final DatabaseConnectionFactory databaseConnectionFactory;
     private DatabaseConnection activeConnection;
     private static final Logger logger = LoggerFactory.getLogger(DatabaseShellCommandsImpl.class);
 
-    @ShellMethod("Connect to a database")
-    @Override
-    public String connectToDatabase(@ShellOption String type, @ShellOption String url, @ShellOption String username, @ShellOption String password) {
+    @ShellMethod(value = "Connect to a database", key = "connect-db")
+//    @Override
+    public String connectToDatabase(@ShellOption String type, @ShellOption String url, @ShellOption String username, @Nullable  @ShellOption String password) {
         try {
             var connection = databaseConnectionFactory.getConnection(type);
             var databaseDetails = DatabaseDetails.builder()
@@ -42,7 +43,7 @@ public class DatabaseShellCommandsImpl implements DatabaseShellCommands {
     }
 
     @ShellMethod("Test the current database connection")
-    @Override
+//    @Override
     public String testConnection() {
         if (activeConnection == null) {
             return "No active database connection. Connect to a database";
@@ -65,7 +66,7 @@ public class DatabaseShellCommandsImpl implements DatabaseShellCommands {
 
 
     @ShellMethod("Disconnect from the current database")
-    @Override
+//    @Override
     public String disconnectDatabase() {
         if (activeConnection == null) {
             return "No active connection to disconnect.";
