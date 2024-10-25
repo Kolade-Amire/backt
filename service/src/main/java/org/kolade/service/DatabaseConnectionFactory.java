@@ -1,4 +1,4 @@
-package org.kolade.service.factory;
+package org.kolade.service;
 
 import lombok.RequiredArgsConstructor;
 import org.kolade.core.exception.CustomBacktException;

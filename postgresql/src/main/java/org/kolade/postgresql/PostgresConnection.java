@@ -34,7 +34,7 @@ public class PostgresConnection implements DatabaseConnection {
     @Override
     public boolean testConnection() {
         try {
-            return connection != null && !connection.isClosed();
+            return connection != null && !connection.isClosed() && connection.isValid(2);
         } catch (SQLException e) {
             logger.error("Error testing connection", e);
             return false;

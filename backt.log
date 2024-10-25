@@ -23,3 +23,21 @@
 1729847688062:connect-db --type "postgres" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password "postgres"
 1729847704757:test-connection
 1729847735766:disconnect-database
+1729848813559:connect-db --type "postgres" --url "jdbc:postgresql://localhost:5432/recat" --username "postgres" --password "postgres"
+1729848946463:help
+1729849481358:connect-db --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish%22%20--apiVersion%201%20--username%20stephamire?authMechanism=DEFAULT" --username "stephamire" --password "08064539914Kay"
+1729849601639:connect-db --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish%22%20--apiVersion%201%20--username%20stephamire?authMechanism=DEFAULT" --username "stephamire" --password "08064539914Kay@"
+1729849716761:connect-db --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish?authMechanism=DEFAULT" --username "stephamire" --password "08064539914Kay"
+1729849762431:connect-db --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish?authMechanism=SCRAM-SHA-256" --username "stephamire" --password "08064539914Kay"
+1729849801302:test-connection
+1729849806110:test-db
+1729850025739:connect-db --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish?retryWrites=true&w=majority" --username "stephamire" --password "08064539914Kay"
+1729850036629:test-db
+1729851262740:help
+1729851297679:connect-db
+1729851359883:help
+1729851366327:connect-db
+1729851425366:connect-db --username "stephamire" --password "08064539914Kay" --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish?retryWrites=true&w=majority"
+1729851437223:test-db
+1729851450624:disconnect-db
+1729851630772:help

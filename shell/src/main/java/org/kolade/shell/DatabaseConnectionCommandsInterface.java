@@ -1,6 +1,6 @@
 package org.kolade.shell;
 
-public interface DatabaseShellCommands {
+public interface DatabaseConnectionCommandsInterface {
 
     String connectToDatabase(String type, String url, String username, String password);
 

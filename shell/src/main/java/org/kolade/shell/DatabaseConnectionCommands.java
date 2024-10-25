@@ -1,28 +1,36 @@
 package org.kolade.shell;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.kolade.core.DatabaseDetails;
 import org.kolade.core.exception.DatabaseConnectionException;
 import org.kolade.core.interfaces.DatabaseConnection;
-import org.kolade.service.factory.DatabaseConnectionFactory;
+import org.kolade.service.DatabaseConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
 @RequiredArgsConstructor
-public class DatabaseShellCommandsImpl{
+public class DatabaseConnectionCommands implements DatabaseConnectionCommandsInterface {
 
     private final DatabaseConnectionFactory databaseConnectionFactory;
     private DatabaseConnection activeConnection;
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseShellCommandsImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseConnectionCommands.class);
 
-    @ShellMethod(value = "Connect to a database", key = "connect-db")
-//    @Override
-    public String connectToDatabase(@ShellOption String type, @ShellOption String url, @ShellOption String username, @Nullable  @ShellOption String password) {
+    @PostConstruct
+    public void showWelcomeMessage() {
+        System.out.println("\nWelcome to Backt!");
+        System.out.println("Quick Tutorial:\nUse 'connect-db' to connect to a database, 'test-db' to check the connection, and 'disconnect-db' to disconnect.");
+        System.out.println("Supported database types are postgres, mysql and mongodb");
+        System.out.println("Type 'help' to see available commands.\n");
+    }
+
+    @ShellMethod(value = "Connect to a database\n Example use case: connect-db --type \"postgresql\" --url \"jdbc:postgresql://localhost:5432/dbname\" --username \"postgres\" --password \"postgres\"\n", key = "connect-db")
+    @Override
+    public String connectToDatabase(@ShellOption(help = "Supported database types are postgres, mysql and mongodb") String type, @ShellOption(help="The JDBC URL or connection string for the database(in case of mongodb)") String url, @ShellOption String username, @ShellOption String password) {
         try {
             var connection = databaseConnectionFactory.getConnection(type);
             var databaseDetails = DatabaseDetails.builder()
@@ -42,8 +50,8 @@ public class DatabaseShellCommandsImpl{
         }
     }
 
-    @ShellMethod("Test the current database connection")
-//    @Override
+    @ShellMethod(value = "Test the current database connection\n", key = "test-db")
+    @Override
     public String testConnection() {
         if (activeConnection == null) {
             return "No active database connection. Connect to a database";
@@ -65,8 +73,8 @@ public class DatabaseShellCommandsImpl{
     }
 
 
-    @ShellMethod("Disconnect from the current database")
-//    @Override
+    @ShellMethod(value = "Disconnect from the current database\n", key = "disconnect-db")
+    @Override
     public String disconnectDatabase() {
         if (activeConnection == null) {
             return "No active connection to disconnect.";
