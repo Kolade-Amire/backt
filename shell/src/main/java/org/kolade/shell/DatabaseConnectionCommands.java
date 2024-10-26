@@ -32,20 +32,31 @@ public class DatabaseConnectionCommands implements DatabaseConnectionCommandsInt
                         Quick Tutorial:
                         Use 'connect-db' to connect to a database, 'test-db' to check the connection, \n and 'disconnect-db' to disconnect. \n
                         Type 'help' to see available commands.
-                        
+                        --hostname "localhost" --port 3306 --dbname "demoDatabase"
                         """
         );
     }
 
-    @ShellMethod(value = "Connect to a database\n Example use case: connect-db --type \"postgresql\" --url \"jdbc:postgresql://localhost:5432/dbname\" --username \"postgres\" --password \"postgres\"\n", key = "connect-db")
+    @ShellMethod(value = "Connect to a database\n Example use case: connect-db --type \"postgresql\" --url \"jdbc:postgresql://localhost:5432/dbname\" --username \"postgres\" --password \"postgres\"  --host \"localhost\" --port 3306 --dbname \"demoDatabase\"\n ", key = "connect-db")
     @Override
-    public String connectToDatabase(@ShellOption(help = "Supported database types are postgres, mysql and mongodb") String type, @ShellOption(help="The JDBC URL or connection string for the database(in case of mongodb)") String url, @ShellOption String username, @ShellOption String password) {
+    public String connectToDatabase(
+            @ShellOption(help = "Supported database types are postgres, mysql and mongodb") String type,
+            @ShellOption(help = "The JDBC URL or connection string for the database(in case of mongodb)") String url,
+            @ShellOption(help = "username for database login") String username,
+            @ShellOption(help = "password for database login") String password,
+            @ShellOption(help = "database host name (could also be the host IP address", defaultValue = "localhost") String host,
+            @ShellOption(help = "database port") int port,
+            @ShellOption(help = "name of database") String dbname
+    ) {
         try {
             var connection = databaseConnectionFactory.getConnection(type);
             var databaseDetails = DatabaseDetails.builder()
                     .connectionUrl(url)
                     .username(username)
                     .password(password)
+                    .host(host)
+                    .port(port)
+                    .dbName(dbname)
                     .build();
 
             connection.connect(databaseDetails);

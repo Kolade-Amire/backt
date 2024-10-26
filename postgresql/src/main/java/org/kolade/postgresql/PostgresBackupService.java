@@ -1,4 +1,4 @@
-package org.kolade.mysql;
+package org.kolade.postgresql;
 
 import lombok.RequiredArgsConstructor;
 import org.kolade.core.BackupMetadata;
@@ -21,66 +21,75 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-@Service
 @RequiredArgsConstructor
-public class MySQLBackupService implements BackupService {
+@Service
+public class PostgresBackupService implements BackupService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MySQLBackupService.class);
-    private final DatabaseDetailsService databaseDetailService;
+    private static final Logger logger = LoggerFactory.getLogger(PostgresConnection.class);
+    private final DatabaseDetailsService databaseDetailsService;
 
-    private void executeCommand(String command) {
 
+    /**
+     * Executes a command with password authentication by injecting the password as an environment variable.
+     *
+     * @param command    The command to execute, formatted for pg_dump
+     * @param dbPassword The password for the database
+     */
+    private void executeCommand(String command, String dbPassword) {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("bin/bash", "-c", command);
             processBuilder.redirectErrorStream(true);
+            processBuilder.environment().put("PGPASSWORD", dbPassword);
             Process process = processBuilder.start();
 
+            // Log output and errors
             try (
                     BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()))
             ) {
-
-                //log standard output
-                stdOut.lines().forEach(logger::info);
-
-                //log error output (if any)
-                stdError.lines().forEach(logger::error);
+                stdOut.lines().forEach(logger::info);  //log standard output
+                stdError.lines().forEach(logger::error); //log error output, if any
 
                 boolean isFinished = process.waitFor(600, TimeUnit.SECONDS);
                 if (!isFinished) {
                     process.destroyForcibly();
                     throw new IOException("Backup process timed out");
                 }
-                if (process.exitValue() != 0) {
-                    throw new IOException("Backup process failed with exit code: " + process.exitValue());
-                }
 
+                if (process.exitValue() != 0) {
+                    throw new IOException("Backup process failed with exit code:" + process.exitValue());
+                }
             }
 
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new CustomBacktException("An error occurred during backup process:", e);
+            throw new CustomBacktException("An error occurred during backup process: ", e);
         }
     }
 
+    /**
+     * Performs a full backup of the PostgreSQL database to the specified directory.
+     *
+     * @param backupDirectory The directory path where the backup file will be saved
+     * @return Path to the backup file
+     */
     @Override
     public Path performFullBackup(String backupDirectory) {
-        DatabaseDetails databaseDetails = databaseDetailService.getActiveDatabaseDetails();
-        if (databaseDetails == null) {
+        DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
+        if (databaseDetails == null){
             throw new CustomBacktException("No active database connection");
         }
 
-        try {
+        try{
             String backupFilePath = Paths.get(backupDirectory, "/full_backup_" + databaseDetails.getDbName() + "_" + LocalDateTime.now() + ".sql").toString();
-            String command = String.format("mysqldump -h %s -P %d -u %s -p%s %s > %s",
+            String command = String.format("pg_dump -h %s -p %d -U %s -d %s -F c -b -v -f %s",
                     databaseDetails.getHost(),
                     databaseDetails.getPort(),
                     databaseDetails.getUsername(),
-                    databaseDetails.getPassword(),
                     databaseDetails.getDbName(),
                     backupFilePath);
 
-            executeCommand(command);
+            executeCommand(command, databaseDetails.getPassword());
 
             Path path = Paths.get(backupFilePath);
 
@@ -94,42 +103,20 @@ public class MySQLBackupService implements BackupService {
             logBackupMetadata(metadata);
 
             return path;
-        } catch (Exception e) {
+        } catch (Exception e){
             throw new CustomBacktException("Failed to perform backup operation: ", e);
         }
+
     }
 
     @Override
     public Path performIncrementalBackup(String backupDirectory) {
-
-        DatabaseDetails databaseDetails = databaseDetailService.getActiveDatabaseDetails();
-        if (databaseDetails == null) {
-            throw new CustomBacktException("No active database connection");
-        }
-
-        try {
-            String backupFilePath = Paths.get(backupDirectory, "/incremental_backup_" + databaseDetails.getDbName() + "_" + LocalDateTime.now() + ".sql").toString();
-            String command = String.format("mysqlbinlog --host=%s --port=%d --start-datetime='YYYY-MM-DD HH:MM:SS' > %s", databaseDetails.getHost(), databaseDetails.getPort(), backupFilePath);
-            executeCommand(command);
-            Path path = Paths.get(backupFilePath);
-            BackupMetadata metadata = BackupMetadata.builder()
-                    .backupFilePath(path)
-                    .backupType(BackupType.INCREMENTAl)
-                    .dbName(databaseDetails.getDbName())
-                    .timestamp(LocalDateTime.now())
-                    .build();
-
-            logBackupMetadata(metadata);
-
-            return path;
-        } catch (Exception e) {
-            throw new CustomBacktException("Failed to perform backup operation: ", e);
-        }
+        return null;
     }
 
     @Override
     public Path performDifferentialBackup(String backupDirectory) {
-        throw new UnsupportedOperationException("Differential backup is not supported for MySQL.");
+        return null;
     }
 
     @Override
@@ -144,18 +131,4 @@ public class MySQLBackupService implements BackupService {
             logger.error("Failed to write backup metadata", e);
         }
     }
-
-    //To extract database name from connection url
-//    private String extractDatabaseName(String url) {
-//        String regex = "//[^/]+/([a-zA-Z0-9_]+)";
-//        Pattern pattern = Pattern.compile(regex);
-//        Matcher matcher = pattern.matcher(url);
-//
-//        if (matcher.find()) {
-//            return matcher.group(1);
-//        } else {
-//            throw new IllegalArgumentException("Invalid URL format: " + url);
-//        }
-//    }
-
 }

@@ -1,14 +1,16 @@
 package org.kolade.core.interfaces;
 
+import org.kolade.core.BackupMetadata;
+
 import java.nio.file.Path;
 
 public interface BackupService {
 
-    Path performFullBackup() throws Exception;
+    Path performFullBackup(String backupDirectory);
 
-    Path performIncrementalBackup() throws Exception;
+    Path performIncrementalBackup(String backupDirectory);
 
-    Path performDifferentialBackup() throws Exception;
+    Path performDifferentialBackup(String backupDirectory);
 
-    void trackBackupMetadata(Path backupFile, String backupType, String dbName);
+    void logBackupMetadata(BackupMetadata metadata);
 }

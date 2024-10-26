@@ -28,6 +28,7 @@ public class PostgresConnection implements DatabaseConnection {
         } catch (SQLException e) {
             throw new DatabaseConnectionException("Unable to connect to the PostgreSQL database", e, databaseDetails.getConnectionUrl());
         }
+
     }
 
 

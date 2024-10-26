@@ -8,7 +8,10 @@ import lombok.*;
 @ToString
 @Builder
 public class DatabaseDetails {
-    String connectionUrl;
-    String username;
-    String password;
+    private String connectionUrl;
+    private String username;
+    private String password;
+    private String host;
+    private int port;
+    private String dbName;
 }
