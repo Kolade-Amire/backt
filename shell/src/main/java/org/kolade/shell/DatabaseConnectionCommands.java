@@ -24,10 +24,17 @@ public class DatabaseConnectionCommands implements DatabaseConnectionCommandsInt
 
     @PostConstruct
     public void showWelcomeMessage() {
-        System.out.println("\nWelcome to Backt!");
-        System.out.println("Quick Tutorial:\nUse 'connect-db' to connect to a database, 'test-db' to check the connection, and 'disconnect-db' to disconnect.");
-        System.out.println("Supported database types are postgres, mysql and mongodb");
-        System.out.println("Type 'help' to see available commands.\n");
+
+        System.out.println(
+                """
+                        \nWelcome to Backt!
+                        
+                        Quick Tutorial:
+                        Use 'connect-db' to connect to a database, 'test-db' to check the connection, \n and 'disconnect-db' to disconnect. \n
+                        Type 'help' to see available commands.
+                        
+                        """
+        );
     }
 
     @ShellMethod(value = "Connect to a database\n Example use case: connect-db --type \"postgresql\" --url \"jdbc:postgresql://localhost:5432/dbname\" --username \"postgres\" --password \"postgres\"\n", key = "connect-db")
