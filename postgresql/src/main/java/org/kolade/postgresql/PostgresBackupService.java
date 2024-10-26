@@ -1,10 +1,7 @@
 package org.kolade.postgresql;
 
 import lombok.RequiredArgsConstructor;
-import org.kolade.core.BackupMetadata;
-import org.kolade.core.BackupType;
-import org.kolade.core.DatabaseDetails;
-import org.kolade.core.DatabaseDetailsService;
+import org.kolade.core.*;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.interfaces.BackupService;
 import org.slf4j.Logger;
@@ -94,6 +91,7 @@ public class PostgresBackupService implements BackupService {
             Path path = Paths.get(backupFilePath);
 
             BackupMetadata metadata = BackupMetadata.builder()
+                    .dbType(DatabaseType.POSTGRES.toString())
                     .backupFilePath(path)
                     .backupType(BackupType.FULL)
                     .dbName(databaseDetails.getDbName())
@@ -109,10 +107,102 @@ public class PostgresBackupService implements BackupService {
 
     }
 
+    //TODO: give a structure to the file storage behaviour
     @Override
-    public Path performIncrementalBackup(String backupDirectory) {
-        return null;
+    public Path performIncrementalBackup(String backupDirectory, String archiveDirectory, String postgresWalArchivePath) {
+        Path baseBackupPath = performBaseBackup(backupDirectory);
+        archiveWALFiles(archiveDirectory, postgresWalArchivePath);
+
+        BackupMetadata metadata = BackupMetadata.builder()
+                .dbType(DatabaseType.POSTGRES.toString())
+                .backupFilePath(baseBackupPath)
+                .backupType(BackupType.INCREMENTAl)
+                .dbName(databaseDetailsService.getActiveDatabaseDetails().getDbName())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        restoreDatabase(backupDirectory, archiveDirectory);
+
+        logBackupMetadata(metadata);
+
+        return baseBackupPath;
+
     }
+
+    private Path performBaseBackup(String backupDirectory) {
+        DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
+        if (databaseDetails == null) {
+            throw new CustomBacktException("No active database connection");
+        }
+
+        try {
+            String backupFilePath = Paths.get(backupDirectory, "base_backup_" + LocalDateTime.now() + ".tar").toString();
+            String command = String.format("pg_basebackup -h %s -p %d -U %s -D %s -Ft -z -P",
+                    databaseDetails.getHost(),
+                    databaseDetails.getPort(),
+                    databaseDetails.getUsername(),
+                    backupFilePath);
+
+            executeCommand(command, databaseDetails.getPassword());
+
+            return Paths.get(backupFilePath);
+        } catch (Exception e) {
+            throw new CustomBacktException("Failed to perform base backup: ", e);
+        }
+    }
+
+    private void archiveWALFiles(String archiveDirectory, String postgresWalArchivePath) {
+        DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
+        if (databaseDetails == null) {
+            throw new CustomBacktException("No active database connection");
+        }
+
+        try {
+            String archiveCommand = String.format("cp %s/* %s", postgresWalArchivePath, archiveDirectory);
+            executeCommand(archiveCommand, databaseDetails.getPassword());
+            logger.info("Archived WAL files to {}", archiveDirectory);
+        } catch (Exception e) {
+            throw new CustomBacktException("Failed to archive WAL files: ", e);
+        }
+    }
+
+
+
+    public void restoreDatabase(String baseBackupPath, String walDirectory) {
+        DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
+        if (databaseDetails == null) {
+            throw new CustomBacktException("No active database connection");
+        }
+
+        try {
+            // Restore base backup
+            String restoreCommand = String.format("pg_restore -h %s -p %d -U %s -d %s -c %s",
+                    databaseDetails.getHost(),
+                    databaseDetails.getPort(),
+                    databaseDetails.getUsername(),
+                    databaseDetails.getDbName(),
+                    baseBackupPath);
+
+            executeCommand(restoreCommand, databaseDetails.getPassword());
+
+            // Apply WAL files
+            String walReplayCommand = String.format("pg_waldump %s | pg_rewind -h %s -p %d -U %s -D %s",
+                    walDirectory,
+                    databaseDetails.getHost(),
+                    databaseDetails.getPort(),
+                    databaseDetails.getUsername(),
+                    databaseDetails.getDbName());
+
+            executeCommand(walReplayCommand, databaseDetails.getPassword());
+            logger.info("Database restored using base backup and WAL files from {}", walDirectory);
+
+        } catch (Exception e) {
+            throw new CustomBacktException("Failed to restore database: ", e);
+        }
+    }
+
+
+
 
     @Override
     public Path performDifferentialBackup(String backupDirectory) {
@@ -121,7 +211,7 @@ public class PostgresBackupService implements BackupService {
 
     @Override
     public void logBackupMetadata(BackupMetadata metadata) {
-        logger.info("Backup completed. Type: {}, DB: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
+        logger.info("Backup completed. Type: {}, Database_name: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
 
         String jsonMetadata = String.format("{\"backupType\": \"%s\", \"dbName\": \"%s\", \"filePath\": \"%s\", \"timestamp\": \"%s\"}\n", metadata.backupType(), metadata.dbName(), metadata.backupFilePath().toString(), metadata.timestamp());
 

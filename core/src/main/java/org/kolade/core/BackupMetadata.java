@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record BackupMetadata(
+        String dbType,
         Path backupFilePath,
         BackupType backupType,
         String dbName,

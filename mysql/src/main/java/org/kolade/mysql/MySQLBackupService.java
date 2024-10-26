@@ -1,14 +1,12 @@
 package org.kolade.mysql;
 
 import lombok.RequiredArgsConstructor;
-import org.kolade.core.BackupMetadata;
-import org.kolade.core.BackupType;
-import org.kolade.core.DatabaseDetails;
-import org.kolade.core.DatabaseDetailsService;
+import org.kolade.core.*;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.interfaces.BackupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -63,6 +61,13 @@ public class MySQLBackupService implements BackupService {
         }
     }
 
+    /**
+     * Performs a full backup of the MySQL database to the specified directory.
+     *
+     * @param backupDirectory The directory path where the backup file will be saved
+     * @return Path to the backup file
+     */
+
     @Override
     public Path performFullBackup(String backupDirectory) {
         DatabaseDetails databaseDetails = databaseDetailService.getActiveDatabaseDetails();
@@ -85,6 +90,7 @@ public class MySQLBackupService implements BackupService {
             Path path = Paths.get(backupFilePath);
 
             BackupMetadata metadata = BackupMetadata.builder()
+                    .dbType(DatabaseType.MYSQL.toString())
                     .backupFilePath(path)
                     .backupType(BackupType.FULL)
                     .dbName(databaseDetails.getDbName())
@@ -100,7 +106,7 @@ public class MySQLBackupService implements BackupService {
     }
 
     @Override
-    public Path performIncrementalBackup(String backupDirectory) {
+    public Path performIncrementalBackup(String backupDirectory, @Nullable String archiveDirectory, @Nullable String walArchivePath) {
 
         DatabaseDetails databaseDetails = databaseDetailService.getActiveDatabaseDetails();
         if (databaseDetails == null) {
@@ -134,7 +140,7 @@ public class MySQLBackupService implements BackupService {
 
     @Override
     public void logBackupMetadata(BackupMetadata metadata) {
-        logger.info("Backup completed. Type: {}, DB: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
+        logger.info("Backup completed. Type: {}, Database_name: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
 
         String jsonMetadata = String.format("{\"backupType\": \"%s\", \"dbName\": \"%s\", \"filePath\": \"%s\", \"timestamp\": \"%s\"}\n", metadata.backupType(), metadata.dbName(), metadata.backupFilePath().toString(), metadata.timestamp());
 
