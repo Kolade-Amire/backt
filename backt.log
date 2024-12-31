@@ -1,0 +1,5 @@
+1735631603088:connect-db
+1735631753182:help
+1735632284786:connect-db --type "mongodb" --url "mongodb+srv://stephamire:08064539914Kay@qlish.zreihi6.mongodb.net/qlish" --username "stephamire" --password "08064539914Kay"  --host "localhost" --port 3306 --dbname "qlishdb"
+1735632304996:test-db
+1735632317236:disconnect-db

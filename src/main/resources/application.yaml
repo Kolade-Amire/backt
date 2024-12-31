@@ -1,3 +1,8 @@
 spring:
   application:
     name: backt
+  shell:
+    interactive:
+      enabled: true
+    script:
+      enabled: true
