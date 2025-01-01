@@ -23,7 +23,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("mysql")
 @RequiredArgsConstructor
 public class MySQLBackupService implements BackupService {
 

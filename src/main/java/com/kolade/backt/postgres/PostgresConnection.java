@@ -13,7 +13,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@Component
+@Component("postgres")
 public class PostgresConnection implements DatabaseConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(PostgresConnection.class);

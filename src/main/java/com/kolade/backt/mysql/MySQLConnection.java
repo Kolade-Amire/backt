@@ -14,7 +14,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@Component
+@Component("mysql")
 public class MySQLConnection implements DatabaseConnection {
 
     private static  final Logger logger = LoggerFactory.getLogger(MySQLConnection.class);

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 
-@Component
+@Component("mongodb")
 public class MongoDBConnection implements DatabaseConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoDBConnection.class);

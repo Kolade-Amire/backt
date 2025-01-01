@@ -21,7 +21,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("mongodb")
 @RequiredArgsConstructor
 public class MongoBackupService implements BackupService {
 

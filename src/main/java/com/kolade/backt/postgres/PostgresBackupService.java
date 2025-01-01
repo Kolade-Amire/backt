@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
-@Service
+@Service("postgres")
 public class PostgresBackupService implements BackupService {
 
     private static final Logger logger = LoggerFactory.getLogger(PostgresConnection.class);

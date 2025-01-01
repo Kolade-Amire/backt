@@ -15,11 +15,10 @@ public enum DatabaseType {
 
     private final String displayName;
 
-    public static DatabaseType getTypeByDisplayName(String name) {
+    public static boolean isTypeValid(String databaseType) {
         return Arrays.stream(DatabaseType.values())
-                .filter(type -> type.getDisplayName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unsupported database type: " + name));
+                .anyMatch(type -> type.getDisplayName().equalsIgnoreCase(databaseType)
+                );
     }
 
 }
