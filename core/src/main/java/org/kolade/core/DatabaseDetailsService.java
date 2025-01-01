@@ -16,6 +16,6 @@ public class DatabaseDetailsService {
     }
 
     public void clearActiveDatabaseDetails() {
-        activeDatabaseDetails = null;
+        setActiveDatabaseDetails(null);
     }
 }

@@ -28,9 +28,10 @@ public class PostgresBackupService implements BackupService {
 
     /**
      * Executes a command with password authentication by injecting the password as an environment variable.
+     * Logs the output and errors of the command execution.
      *
-     * @param command    The command to execute, formatted for pg_dump
-     * @param dbPassword The password for the database
+     * @param command    The command to execute, formatted for PostgreSQL tools.
+     * @param dbPassword The password for the database.
      */
     private void executeCommand(String command, String dbPassword) {
         try {
@@ -65,10 +66,11 @@ public class PostgresBackupService implements BackupService {
     }
 
     /**
-     * Performs a full backup of the PostgreSQL database to the specified directory.
+     * Performs a full backup of the PostgreSQL database.
+     * Generates a backup file in the specified directory and logs metadata.
      *
-     * @param backupDirectory The directory path where the backup file will be saved
-     * @return Path to the backup file
+     * @param backupDirectory The directory path where the backup file will be saved.
+     * @return The path to the generated backup file.
      */
     @Override
     public Path performFullBackup(String backupDirectory) {
@@ -107,6 +109,15 @@ public class PostgresBackupService implements BackupService {
 
     }
 
+    /**
+     * Performs an incremental backup using Base Backups and Write-Ahead Logs (WAL).
+     * Archives WAL files and restores the database for verification.
+     *
+     * @param backupDirectory         The directory path where the base backup will be saved.
+     * @param archiveDirectory        The directory path where WAL files will be archived.
+     * @param postgresWalArchivePath  The source path of PostgreSQL WAL files.
+     * @return The path to the base backup file.
+     */
     //TODO: give a structure to the file storage behaviour
     @Override
     public Path performIncrementalBackup(String backupDirectory, String archiveDirectory, String postgresWalArchivePath) {
@@ -129,6 +140,12 @@ public class PostgresBackupService implements BackupService {
 
     }
 
+    /**
+     * Performs a base backup of the PostgreSQL database.
+     *
+     * @param backupDirectory The directory path where the base backup will be saved.
+     * @return The path to the base backup file.
+     */
     private Path performBaseBackup(String backupDirectory) {
         DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
         if (databaseDetails == null) {
@@ -151,6 +168,12 @@ public class PostgresBackupService implements BackupService {
         }
     }
 
+    /**
+     * Archives Write-Ahead Log (WAL) files to a specified directory.
+     *
+     * @param archiveDirectory       The directory where WAL files will be archived.
+     * @param postgresWalArchivePath The source directory of WAL files.
+     */
     private void archiveWALFiles(String archiveDirectory, String postgresWalArchivePath) {
         DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
         if (databaseDetails == null) {
@@ -167,7 +190,12 @@ public class PostgresBackupService implements BackupService {
     }
 
 
-
+    /**
+     * Restores the database from a base backup and replays WAL files.
+     *
+     * @param baseBackupPath The path to the base backup file.
+     * @param walDirectory   The directory containing the WAL files.
+     */
     public void restoreDatabase(String baseBackupPath, String walDirectory) {
         DatabaseDetails databaseDetails = databaseDetailsService.getActiveDatabaseDetails();
         if (databaseDetails == null) {
@@ -206,7 +234,7 @@ public class PostgresBackupService implements BackupService {
 
     @Override
     public Path performDifferentialBackup(String backupDirectory) {
-        return null;
+        throw new UnsupportedOperationException("Differential backup is not supported natively for Postgres.");
     }
 
     @Override

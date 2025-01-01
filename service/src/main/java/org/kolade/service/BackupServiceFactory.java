@@ -1,6 +1,5 @@
 package org.kolade.service;
 
-import lombok.RequiredArgsConstructor;
 import org.kolade.core.DatabaseType;
 import org.kolade.core.exception.CustomBacktException;
 import org.kolade.core.interfaces.BackupService;
