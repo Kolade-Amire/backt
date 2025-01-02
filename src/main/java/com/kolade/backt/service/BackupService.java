@@ -1,11 +1,11 @@
 package com.kolade.backt.service;
 
 import com.kolade.backt.common.BackupMetadata;
+import com.kolade.backt.common.BackupMetadataDto;
 import com.kolade.backt.common.BackupRequest;
 import com.kolade.backt.common.BackupResult;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 public interface BackupService {
 
@@ -13,6 +13,6 @@ public interface BackupService {
 
     void validateBackupRequest(BackupRequest request);
 
-    BackupMetadata getBackupMetadata(BackupMetadata metadata);
+    BackupMetadata getBackupMetadata(String backupId);
 
 }

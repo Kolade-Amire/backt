@@ -1,6 +1,6 @@
 package com.kolade.backt.postgres;
 
-import com.kolade.backt.common.BackupMetadata;
+import com.kolade.backt.common.BackupMetadataDto;
 import com.kolade.backt.common.BackupType;
 import com.kolade.backt.common.DatabaseDetails;
 import com.kolade.backt.common.DatabaseType;
@@ -96,7 +96,7 @@ public class PostgresBackupService implements BackupService {
 
             Path path = Paths.get(backupFilePath);
 
-            BackupMetadata metadata = BackupMetadata.builder()
+            BackupMetadataDto metadata = BackupMetadataDto.builder()
                     .dbType(DatabaseType.POSTGRES.toString())
                     .backupFilePath(path)
                     .backupType(BackupType.FULL)
@@ -128,7 +128,7 @@ public class PostgresBackupService implements BackupService {
         Path baseBackupPath = performBaseBackup(backupDirectory);
         archiveWALFiles(archiveDirectory, postgresWalArchivePath);
 
-        BackupMetadata metadata = BackupMetadata.builder()
+        BackupMetadataDto metadata = BackupMetadataDto.builder()
                 .dbType(DatabaseType.POSTGRES.toString())
                 .backupFilePath(baseBackupPath)
                 .backupType(BackupType.INCREMENTAl)
@@ -242,7 +242,7 @@ public class PostgresBackupService implements BackupService {
     }
 
     @Override
-    public void getBackupMetadata(BackupMetadata metadata) {
+    public void getBackupMetadata(BackupMetadataDto metadata) {
         logger.info("Backup completed. Type: {}, Database_name: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
 
         String jsonMetadata = String.format("{\"backupType\": \"%s\", \"dbName\": \"%s\", \"filePath\": \"%s\", \"timestamp\": \"%s\"}\n", metadata.backupType(), metadata.dbName(), metadata.backupFilePath().toString(), metadata.timestamp());

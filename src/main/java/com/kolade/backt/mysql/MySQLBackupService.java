@@ -1,9 +1,13 @@
 package com.kolade.backt.mysql;
 
 import com.kolade.backt.common.*;
+import com.kolade.backt.exception.BackupException;
 import com.kolade.backt.exception.CustomBacktException;
+import com.kolade.backt.repository.BackupMetadataRepository;
 import com.kolade.backt.service.BackupService;
 import com.kolade.backt.service.DatabaseDetailsService;
+import com.kolade.backt.util.BackupUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service("mysql")
@@ -27,11 +30,12 @@ public class MySQLBackupService implements BackupService {
 
     private static final Logger logger = LoggerFactory.getLogger(MySQLBackupService.class);
     private final DatabaseDetailsService databaseDetailService;
+    private final BackupMetadataRepository metadataRepository;
 
     private void executeCommand(String command) {
 
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("bin/bash", "-c", command);
+            ProcessBuilder processBuilder = new ProcessBuilder("/bin/bash", "-c", command);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -46,20 +50,17 @@ public class MySQLBackupService implements BackupService {
                 //log error output (if any)
                 stdError.lines().forEach(logger::error);
 
-                boolean isFinished = process.waitFor(600, TimeUnit.SECONDS);
-                if (!isFinished) {
+                int exitCode = process.waitFor();
+                if (exitCode != 0) {
                     process.destroyForcibly();
-                    throw new IOException("Backup process timed out");
-                }
-                if (process.exitValue() != 0) {
-                    throw new IOException("Backup process failed with exit code: " + process.exitValue());
+                    throw new BackupException("mysqldump failed with exit code: " + exitCode);
                 }
 
             }
 
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             Thread.currentThread().interrupt();
-            throw new CustomBacktException("An error occurred during backup process... \n " + e.getMessage());
+            throw new CustomBacktException("An error occurred while executing command... \n " + e.getMessage());
         }
     }
 
@@ -71,7 +72,7 @@ public class MySQLBackupService implements BackupService {
         Path tempBackupPath = BackupUtil.createTempBackupPath(id);
 
         try {
-            switch (backupRequest.backupType()){
+            switch (backupRequest.backupType()) {
                 case FULL -> performFullBackup(backupRequest, tempBackupPath);
                 case INCREMENTAl -> performIncrementalBackup(backupRequest, tempBackupPath);
                 case DIFFERENTIAL -> performDifferentialBackup(backupRequest, tempBackupPath);
@@ -84,13 +85,14 @@ public class MySQLBackupService implements BackupService {
             //save metadata
 
             var backupMetadata = BackupMetadata.builder()
-                    .id(id)
+                    .backupId(id)
                     .databaseType(DatabaseType.MYSQL)
+                    .backupType(backupRequest.backupType())
                     .databaseName(backupRequest.databaseName())
-                    .backupFilePath(backupRequest.destinationPath()) //edit to finalPath
+                    .backupPath(backupRequest.destinationPath().toString()) //edit to finalPath
                     .creationTime(startTime)
                     .build();
-            //TODO: metadataRepository.save(backupMetadata)
+            metadataRepository.save(backupMetadata);
 
             return BackupResult.builder()
                     .backupId(id)
@@ -135,60 +137,34 @@ public class MySQLBackupService implements BackupService {
     }
 
     @Override
-    public void getBackupMetadata(BackupMetadata metadata) {
-        logger.info("Backup completed. Type: {}, Database_name: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
-
-        String jsonMetadata = String.format("{\"backupType\": \"%s\", \"dbName\": \"%s\", \"filePath\": \"%s\", \"timestamp\": \"%s\"}\n", metadata.backupType(), metadata.dbName(), metadata.backupFilePath().toString(), metadata.timestamp());
-
-        try {
-            Files.writeString(Paths.get("backup_metadata.json"), jsonMetadata, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            logger.error("Failed to write backup metadata", e);
-        }
+    public BackupMetadata getBackupMetadata(String backupId) {
+        return metadataRepository.findByBackupId(backupId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Backup %s not found", backupId))
+        );
     }
 
 
-
-
-    /**
-     * Performs a full backup of the MySQL database to the specified directory.
-     *
-     * @param backupDirectory The directory path where the backup file will be saved
-     * @return Path to the backup file
-     */
-    public Path performFullBackup(String backupDirectory) {
+    private void performFullBackup(BackupRequest request, Path tempBackupPath) {
         DatabaseDetails databaseDetails = databaseDetailService.getActiveDatabaseDetails();
         if (databaseDetails == null) {
             throw new CustomBacktException("No active database connection");
         }
 
         try {
-            String backupFilePath = Paths.get(backupDirectory, "/full_backup_" + databaseDetails.getDatabaseName() + "_" + LocalDateTime.now() + ".sql").toString();
-            String command = String.format("mysqldump -h %s -P %d -u %s -p%s %s > %s",
-                    databaseDetails.getHost(),
-                    databaseDetails.getPort(),
-                    databaseDetails.getUsername(),
-                    databaseDetails.getPassword(),
-                    databaseDetails.getDatabaseName(),
-                    backupFilePath);
+
+            String command = "mysqldump" +
+                    " --host=" + databaseDetails.getHost() +
+                    " --port=" + databaseDetails.getPort() +
+                    " --user=" + databaseDetails.getUsername() +
+                    " --password=\"" + databaseDetails.getPassword() + "\"" +
+                    " --result-file=" + tempBackupPath +
+                    " --databases \"" +
+                    request.databaseName() + "\"";
 
             executeCommand(command);
 
-            Path path = Paths.get(backupFilePath);
-
-            BackupMetadata metadata = BackupMetadata.builder()
-                    .databaseType(DatabaseType.MYSQL.toString())
-                    .backupFilePath(path)
-                    .backupType(BackupType.FULL)
-                    .databaseName(databaseDetails.getDatabaseName())
-                    .creationTime(LocalDateTime.now())
-                    .build();
-
-            getBackupMetadata(metadata);
-
-            return path;
         } catch (Exception e) {
-            throw new CustomBacktException("Failed to perform backup operation: ", e);
+            throw new BackupException("Failed to perform backup operation: ", e);
         }
     }
 
@@ -205,7 +181,7 @@ public class MySQLBackupService implements BackupService {
             String command = String.format("mysqlbinlog --host=%s --port=%d --start-datetime='YYYY-MM-DD HH:MM:SS' > %s", databaseDetails.getHost(), databaseDetails.getPort(), backupFilePath);
             executeCommand(command);
             Path path = Paths.get(backupFilePath);
-            BackupMetadata metadata = BackupMetadata.builder()
+            BackupMetadataDto metadata = BackupMetadataDto.builder()
                     .backupFilePath(path)
                     .backupType(BackupType.INCREMENTAl)
                     .dbName(databaseDetails.getDatabaseName())
@@ -223,7 +199,7 @@ public class MySQLBackupService implements BackupService {
     public Path performDifferentialBackup(String backupDirectory) {
         // For PostgreSQL, differential backup is similar to incremental
         // as it relies on WAL archiving
-        return performIncrementalBackup( backupDirectory, null, null);
+        return performIncrementalBackup(backupDirectory, null, null);
     }
 
 }

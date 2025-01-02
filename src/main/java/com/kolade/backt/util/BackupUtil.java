@@ -1,4 +1,6 @@
-package com.kolade.backt.common;
+package com.kolade.backt.util;
+
+import com.kolade.backt.common.BackupRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;

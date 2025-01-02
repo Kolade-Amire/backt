@@ -1,6 +1,6 @@
 package com.kolade.backt.mongodb;
 
-import com.kolade.backt.common.BackupMetadata;
+import com.kolade.backt.common.BackupMetadataDto;
 import com.kolade.backt.common.BackupType;
 import com.kolade.backt.common.DatabaseDetails;
 import com.kolade.backt.common.DatabaseType;
@@ -88,7 +88,7 @@ public class MongoBackupService implements BackupService {
 
             Path path = Paths.get(backupFilePath);
 
-            BackupMetadata metadata = BackupMetadata.builder()
+            BackupMetadataDto metadata = BackupMetadataDto.builder()
                     .dbType(DatabaseType.MONGODB.toString())
                     .backupFilePath(path)
                     .backupType(BackupType.FULL)
@@ -107,7 +107,7 @@ public class MongoBackupService implements BackupService {
     @Override
     public Path performIncrementalBackup(String backupDirectory, @Nullable String archiveDirectory, @Nullable String walArchivePath) {
         // MongoDB's incremental backup uses oplog
-        Optional<BackupMetadata> lastBackup = metadataRepository
+        Optional<BackupMetadataDto> lastBackup = metadataRepository
                 .findLastSuccessfulBackup(request.databaseName());
 
         ProcessBuilder pb = new ProcessBuilder(
@@ -141,7 +141,7 @@ public class MongoBackupService implements BackupService {
     @Override
     public Path performDifferentialBackup(String backupDirectory) {
         // For MongoDB, find last full backup and use oplog from there
-        Optional<BackupMetadata> lastFullBackup = metadataRepository
+        Optional<BackupMetadataDto> lastFullBackup = metadataRepository
                 .findLastFullBackup(request.databaseName());
 
         if (lastFullBackup.isEmpty()) {
@@ -173,7 +173,7 @@ public class MongoBackupService implements BackupService {
     }
 
     @Override
-    public void logBackupMetadata(BackupMetadata metadata) {
+    public void logBackupMetadata(BackupMetadataDto metadata) {
         logger.info("Backup created: Type={}, Database_name={}, Path={}, Timestamp: {}", metadata.backupType(), metadata.databaseName(), metadata.backupFilePath().toString(), metadata.timestamp());
 
     }
