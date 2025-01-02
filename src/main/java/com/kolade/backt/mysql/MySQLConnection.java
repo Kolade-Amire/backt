@@ -3,82 +3,45 @@ package com.kolade.backt.mysql;
 
 import com.kolade.backt.common.DatabaseConnection;
 import com.kolade.backt.common.DatabaseDetails;
-import com.kolade.backt.exception.CustomBacktException;
-import com.kolade.backt.exception.DatabaseConnectionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.kolade.backt.common.DatabaseType;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @Component("mysql")
 public class MySQLConnection implements DatabaseConnection {
 
-    private static  final Logger logger = LoggerFactory.getLogger(MySQLConnection.class);
-
     private Connection connection;
+    private DatabaseDetails databaseDetails;
 
     @Override
-    public void connect(DatabaseDetails databaseDetails) {
-        try {
+    public void connect(DatabaseDetails databaseDetails) throws SQLException {
             connection = DriverManager.getConnection(databaseDetails.getConnectionUrl(), databaseDetails.getUsername(), databaseDetails.getPassword());
-        } catch (SQLException e) {
-            throw new DatabaseConnectionException("Unable to connect to the MySQL database: ", e, databaseDetails.getConnectionUrl());
-        }
+            this.databaseDetails = databaseDetails;
     }
 
     @Override
-    public boolean testConnection() {
-        try {
-            return connection != null && !connection.isClosed() && connection.isValid(2);
-        } catch (SQLException e) {
-            logger.error("Error testing connection: ", e);
-            return false;
-        }
+    public boolean testConnection() throws SQLException {
+            return connection != null && !connection.isClosed() && connection.isValid(5);
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect() throws SQLException {
         if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                throw new CustomBacktException("Unable to close connection: ", e);
-            }
+            connection.close();
         }
+
     }
 
     @Override
-    public String getType() {
-        return "MySQL";
+    public DatabaseType getType() {
+        return DatabaseType.MYSQL;
     }
 
     @Override
-    public String getDatabaseName() {
-        if (connection != null) {
-            try {
-                return connection.getCatalog();
-            } catch (SQLException e) {
-                throw new CustomBacktException("Unable to get database name: ", e);
-            }
-
-        }
-        return "Unknown";
-    }
-
-    @Override
-    public String getDatabaseVersion() {
-        if (connection != null) {
-            try{
-                DatabaseMetaData metaData = connection.getMetaData();
-                return metaData.getDatabaseProductVersion();
-            }catch (SQLException e){
-                throw new CustomBacktException("Unable to get database version: ", e);
-            }
-        }
-        return "Unknown";
+    public DatabaseDetails getDatabaseDetails() {
+        return this.databaseDetails;
     }
 }

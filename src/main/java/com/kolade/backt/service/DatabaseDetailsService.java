@@ -1,5 +1,6 @@
 package com.kolade.backt.service;
 
+import com.kolade.backt.common.DatabaseConnection;
 import com.kolade.backt.common.DatabaseDetails;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,12 +12,12 @@ import org.springframework.stereotype.Service;
 public class DatabaseDetailsService {
 
     private DatabaseDetails activeDatabaseDetails;
+    private DatabaseConnection activeDatabaseConnection;
 
     public boolean hasActiveConnection() {
-        return activeDatabaseDetails != null;
+        return activeDatabaseConnection != null;
     }
-
-    public void clearActiveDatabaseDetails() {
+    public void clearActiveDatabase() {
         setActiveDatabaseDetails(null);
     }
 }

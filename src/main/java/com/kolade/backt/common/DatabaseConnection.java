@@ -2,20 +2,19 @@ package com.kolade.backt.common;
 
 import com.kolade.backt.exception.DatabaseConnectionException;
 
+import java.sql.SQLException;
+
 public interface DatabaseConnection {
 
+    void connect (DatabaseDetails databaseDetails) throws SQLException;
 
-    void connect(DatabaseDetails databaseDetails) throws DatabaseConnectionException;
+    boolean testConnection() throws SQLException;
 
-    boolean testConnection();
+    void disconnect() throws SQLException;
 
-    void disconnect();
+    DatabaseType getType();
 
-    String getType();
-
-    String getDatabaseName();
-
-    String getDatabaseVersion();
+    DatabaseDetails getDatabaseDetails();
 
 
 

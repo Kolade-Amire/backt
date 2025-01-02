@@ -2,6 +2,7 @@ package com.kolade.backt.postgres;
 
 import com.kolade.backt.common.DatabaseConnection;
 import com.kolade.backt.common.DatabaseDetails;
+import com.kolade.backt.common.DatabaseType;
 import com.kolade.backt.exception.CustomBacktException;
 import com.kolade.backt.exception.DatabaseConnectionException;
 import org.slf4j.Logger;
@@ -55,8 +56,8 @@ public class PostgresConnection implements DatabaseConnection {
     }
 
     @Override
-    public String getType() {
-        return "PostgreSQL";
+    public DatabaseType getType() {
+        return DatabaseType.POSTGRES;
     }
 
     @Override

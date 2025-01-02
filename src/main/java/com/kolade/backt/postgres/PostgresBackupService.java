@@ -84,12 +84,12 @@ public class PostgresBackupService implements BackupService {
         }
 
         try{
-            String backupFilePath = Paths.get(backupDirectory, "/full_backup_" + databaseDetails.getDbName() + "_" + LocalDateTime.now() + ".sql").toString();
+            String backupFilePath = Paths.get(backupDirectory, "/full_backup_" + databaseDetails.getDatabaseName() + "_" + LocalDateTime.now() + ".sql").toString();
             String command = String.format("pg_dump -h %s -p %d -U %s -d %s -F c -b -v -f %s",
                     databaseDetails.getHost(),
                     databaseDetails.getPort(),
                     databaseDetails.getUsername(),
-                    databaseDetails.getDbName(),
+                    databaseDetails.getDatabaseName(),
                     backupFilePath);
 
             executeCommand(command, databaseDetails.getPassword());
@@ -100,11 +100,11 @@ public class PostgresBackupService implements BackupService {
                     .dbType(DatabaseType.POSTGRES.toString())
                     .backupFilePath(path)
                     .backupType(BackupType.FULL)
-                    .dbName(databaseDetails.getDbName())
+                    .dbName(databaseDetails.getDatabaseName())
                     .timestamp(LocalDateTime.now())
                     .build();
 
-            logBackupMetadata(metadata);
+            getBackupMetadata(metadata);
 
             return path;
         } catch (Exception e){
@@ -132,13 +132,13 @@ public class PostgresBackupService implements BackupService {
                 .dbType(DatabaseType.POSTGRES.toString())
                 .backupFilePath(baseBackupPath)
                 .backupType(BackupType.INCREMENTAl)
-                .dbName(databaseDetailsService.getActiveDatabaseDetails().getDbName())
+                .dbName(databaseDetailsService.getActiveDatabaseDetails().getDatabaseName())
                 .timestamp(LocalDateTime.now())
                 .build();
 
         restoreDatabase(backupDirectory, archiveDirectory);
 
-        logBackupMetadata(metadata);
+        getBackupMetadata(metadata);
 
         return baseBackupPath;
 
@@ -212,7 +212,7 @@ public class PostgresBackupService implements BackupService {
                     databaseDetails.getHost(),
                     databaseDetails.getPort(),
                     databaseDetails.getUsername(),
-                    databaseDetails.getDbName(),
+                    databaseDetails.getDatabaseName(),
                     baseBackupPath);
 
             executeCommand(restoreCommand, databaseDetails.getPassword());
@@ -223,7 +223,7 @@ public class PostgresBackupService implements BackupService {
                     databaseDetails.getHost(),
                     databaseDetails.getPort(),
                     databaseDetails.getUsername(),
-                    databaseDetails.getDbName());
+                    databaseDetails.getDatabaseName());
 
             executeCommand(walReplayCommand, databaseDetails.getPassword());
             logger.info("Database restored using base backup and WAL files from {}", walDirectory);
@@ -242,7 +242,7 @@ public class PostgresBackupService implements BackupService {
     }
 
     @Override
-    public void logBackupMetadata(BackupMetadata metadata) {
+    public void getBackupMetadata(BackupMetadata metadata) {
         logger.info("Backup completed. Type: {}, Database_name: {}, Path: {}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath(), metadata.timestamp());
 
         String jsonMetadata = String.format("{\"backupType\": \"%s\", \"dbName\": \"%s\", \"filePath\": \"%s\", \"timestamp\": \"%s\"}\n", metadata.backupType(), metadata.dbName(), metadata.backupFilePath().toString(), metadata.timestamp());

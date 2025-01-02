@@ -14,6 +14,8 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
+import java.sql.SQLException;
+
 @ShellComponent
 @RequiredArgsConstructor
 public class DatabaseConnectionCommandsImpl implements DatabaseConnectionCommands {
@@ -58,16 +60,17 @@ public class DatabaseConnectionCommandsImpl implements DatabaseConnectionCommand
                     .password(password)
                     .host(host)
                     .port(port)
-                    .dbName(dbname)
+                    .databaseName(dbname)
                     .build();
 
             connection.connect(databaseDetails);
             activeConnection = connection;
             databaseDetailsService.setActiveDatabaseDetails(databaseDetails);
+            databaseDetailsService.setActiveDatabaseConnection(activeConnection);
 
             logger.info("Successfully connected to the {} database at {}", type, url);
             return "Successfully connected to " + type + " database at " + url;
-        } catch (DatabaseConnectionException e) {
+        } catch (SQLException | DatabaseConnectionException e) {
             logger.error("Failed to connect to the {} database: {}", type, e.getMessage());
             return "An error occurred while connection to database... Please check the details and try again. " + e.getMessage();
         }
@@ -79,7 +82,6 @@ public class DatabaseConnectionCommandsImpl implements DatabaseConnectionCommand
         if (activeConnection == null) {
             return "No active database connection. Connect to a database";
         }
-
         try {
             if (activeConnection.testConnection()) {
                 logger.info("Connection to the {} is active!.", activeConnection.getType());
@@ -105,8 +107,8 @@ public class DatabaseConnectionCommandsImpl implements DatabaseConnectionCommand
 
         try {
             activeConnection.disconnect();
-            databaseDetailsService.clearActiveDatabaseDetails();
-            String dbType = activeConnection.getType();
+            databaseDetailsService.clearActiveDatabase();
+            DatabaseType dbType = activeConnection.getType();
             activeConnection = null;
             logger.info("Successfully disconnected from the {} database.", dbType);
             return "Successfully disconnected from the " + dbType + " database.";

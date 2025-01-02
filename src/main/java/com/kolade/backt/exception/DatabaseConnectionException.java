@@ -1,11 +1,10 @@
 package com.kolade.backt.exception;
 
-public class DatabaseConnectionException extends CustomBacktException {
+public class DatabaseConnectionException extends RuntimeException {
     private final String connectionUrl;
 
-
-    public DatabaseConnectionException(String message, Throwable cause, String connectionUrl) {
-        super(message, cause);
+    public DatabaseConnectionException(Throwable cause, String connectionUrl) {
+        super(cause);
         this.connectionUrl = connectionUrl;
     }
 

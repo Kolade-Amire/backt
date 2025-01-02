@@ -1,17 +1,18 @@
 package com.kolade.backt.service;
 
 import com.kolade.backt.common.BackupMetadata;
-import org.springframework.lang.Nullable;
+import com.kolade.backt.common.BackupRequest;
+import com.kolade.backt.common.BackupResult;
 
-import java.nio.file.Path;
+import java.io.IOException;
+import java.time.LocalDateTime;
 
 public interface BackupService {
 
-    Path performFullBackup(String backupDirectory);
+    BackupResult performBackup(BackupRequest backupRequest) throws IOException;
 
-    Path performIncrementalBackup(String backupDirectory, @Nullable String archiveDirectory, @Nullable String walArchivePath);
+    void validateBackupRequest(BackupRequest request);
 
-    Path performDifferentialBackup(String backupDirectory);
+    BackupMetadata getBackupMetadata(BackupMetadata metadata);
 
-    void logBackupMetadata(BackupMetadata metadata);
 }

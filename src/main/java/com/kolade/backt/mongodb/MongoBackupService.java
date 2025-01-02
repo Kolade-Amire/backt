@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service("mongodb")
@@ -73,14 +74,14 @@ public class MongoBackupService implements BackupService {
         }
 
         try{
-            String backupFilePath = Paths.get(backupDirectory, "/full_backup_" + databaseDetails.getDbName() + "_" + LocalDateTime.now()).toString();
+            String backupFilePath = Paths.get(backupDirectory, "/full_backup_" + databaseDetails.getDatabaseName() + "_" + LocalDateTime.now()).toString();
 
             String command = String.format("mongodump --host %s --port %d --username %s --password %s --db %s --out %s",
                     databaseDetails.getHost(),
                     databaseDetails.getPort(),
                     databaseDetails.getUsername(),
                     databaseDetails.getPassword(),
-                    databaseDetails.getDbName(),
+                    databaseDetails.getDatabaseName(),
                     backupFilePath);
 
             executeCommand(command);
@@ -91,11 +92,11 @@ public class MongoBackupService implements BackupService {
                     .dbType(DatabaseType.MONGODB.toString())
                     .backupFilePath(path)
                     .backupType(BackupType.FULL)
-                    .dbName(databaseDetails.getDbName())
+                    .dbName(databaseDetails.getDatabaseName())
                     .timestamp(LocalDateTime.now())
                     .build();
 
-            logBackupMetadata(metadata);
+            getBackupMetadata(metadata);
 
             return path;
         } catch (Exception e){
@@ -105,17 +106,75 @@ public class MongoBackupService implements BackupService {
 
     @Override
     public Path performIncrementalBackup(String backupDirectory, @Nullable String archiveDirectory, @Nullable String walArchivePath) {
-        throw new UnsupportedOperationException("Incremental backups are not directly supported in MongoDB.");
+        // MongoDB's incremental backup uses oplog
+        Optional<BackupMetadata> lastBackup = metadataRepository
+                .findLastSuccessfulBackup(request.databaseName());
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "mongodump",
+                "--host", connector.getHost(),
+                "--port", connector.getPort(),
+                "--username", connector.getUsername(),
+                "--password", connector.getPassword(),
+                "--db", request.databaseName(),
+                "--out", tempBackupPath.toString(),
+                "--gzip"
+        );
+
+        if (lastBackup.isPresent()) {
+            // Add oplog replay from last backup
+            pb.command().addAll(List.of(
+                    "--oplog",
+                    "--query", "{\"ts\": {\"$gt\": {\"$timestamp\": {\"t\": " +
+                            lastBackup.get().creationTime().toEpochSecond() + ", \"i\": 1}}}}"
+            ));
+        }
+
+        Process process = pb.start();
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new BackupException("mongodump failed with exit code: " + exitCode);
+        }
     }
 
     @Override
     public Path performDifferentialBackup(String backupDirectory) {
-        throw new UnsupportedOperationException("Differential backup is not supported for MongoDB.");
+        // For MongoDB, find last full backup and use oplog from there
+        Optional<BackupMetadata> lastFullBackup = metadataRepository
+                .findLastFullBackup(request.databaseName());
+
+        if (lastFullBackup.isEmpty()) {
+            performFullBackup(request, tempBackupPath);
+            return;
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "mongodump",
+                "--host", connector.getHost(),
+                "--port", connector.getPort(),
+                "--username", connector.getUsername(),
+                "--password", connector.getPassword(),
+                "--db", request.databaseName(),
+                "--out", tempBackupPath.toString(),
+                "--gzip",
+                "--oplog",
+                "--query", "{\"ts\": {\"$gt\": {\"$timestamp\": {\"t\": " +
+                lastFullBackup.get().creationTime().toEpochSecond() + ", \"i\": 1}}}}"
+        );
+
+        Process process = pb.start();
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new BackupException("mongodump failed with exit code: " + exitCode);
+        }
+    }
     }
 
     @Override
     public void logBackupMetadata(BackupMetadata metadata) {
-        logger.info("Backup created: Type={}, Database_name={}, Path={}, Timestamp: {}", metadata.backupType(), metadata.dbName(), metadata.backupFilePath().toString(), metadata.timestamp());
+        logger.info("Backup created: Type={}, Database_name={}, Path={}, Timestamp: {}", metadata.backupType(), metadata.databaseName(), metadata.backupFilePath().toString(), metadata.timestamp());
 
     }
 }

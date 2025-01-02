@@ -2,8 +2,8 @@ package com.kolade.backt.mongodb;
 
 import com.kolade.backt.common.DatabaseConnection;
 import com.kolade.backt.common.DatabaseDetails;
+import com.kolade.backt.common.DatabaseType;
 import com.kolade.backt.exception.CustomBacktException;
-import com.kolade.backt.exception.DatabaseConnectionException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.bson.Document;
@@ -16,16 +16,11 @@ import org.springframework.stereotype.Component;
 public class MongoDBConnection implements DatabaseConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoDBConnection.class);
-
     private MongoClient mongoClient;
 
     @Override
     public void connect(DatabaseDetails databaseDetails) {
-        try {
-            mongoClient = MongoClients.create(databaseDetails.getConnectionUrl());
-        } catch (Exception e) {
-            throw new DatabaseConnectionException("Unable to connect to the MongoDB database: ", e, databaseDetails.getConnectionUrl());
-        }
+        mongoClient = MongoClients.create(databaseDetails.getConnectionUrl());
     }
 
     @Override
@@ -52,11 +47,16 @@ public class MongoDBConnection implements DatabaseConnection {
 
 
     @Override
-    public String getType() {
-        return "MongoDB";
+    public DatabaseType getType() {
+        return DatabaseType.MONGODB;
     }
 
     @Override
+    public DatabaseDetails getDatabaseDetails() {
+        return null;
+    }
+
+
     public String getDatabaseName() {
         try {
             return mongoClient.listDatabaseNames().first();
@@ -65,7 +65,6 @@ public class MongoDBConnection implements DatabaseConnection {
         }
     }
 
-    @Override
     public String getDatabaseVersion() {
         try {
             Document buildInfo = mongoClient.getDatabase("admin").runCommand(new Document("buildInfo", 1));

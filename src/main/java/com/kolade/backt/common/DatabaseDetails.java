@@ -13,5 +13,5 @@ public class DatabaseDetails {
     private String password;
     private String host;
     private int port;
-    private String dbName;
+    private String databaseName;
 }
